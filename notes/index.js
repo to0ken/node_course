@@ -15,10 +15,7 @@ let notes = [];
 let welcome = `Тебя приветствует приложение ${NAME_PROJ}`;
 
 const welcomeApp = () => {
-  Decorator.drawLine();
-  console.log("\n");
-  console.log(`${welcome}`);
-  Decorator.drawLine();
+  
 
   showMenu();
 };
