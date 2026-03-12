@@ -3,10 +3,10 @@ class Decorator{
     console.log("=".repeat(30));
   }
   static presentMenu(welcome){
-   drawLine();
+  this.drawLine();
   console.log("\n");
   console.log(`${welcome}`);
-  drawLine();
+  this.drawLine();
   }
 }
 module.exports = Decorator;
