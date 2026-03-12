@@ -1,74 +1,105 @@
-const readline = require("readlina"); // импорт библиотеки
+const readline = require("readline"); // импортируем модуль из node
 
-// мы обращаемся к библиотеке readline
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
 });
 
-const NAME_PROJ = "NOTE-BOOK";
+const NAME_PROJ = '"NOTE"-"BOOK"';
 
 let notes = [];
 
-let str = `привет от приложения!!! ${NAME_PROG}`;
+let welcome = `Тебя приветствует приложение ${NAME_PROJ}`;
 
+const welcomeApp = () => {
+  console.log("_".repeat(30));
+  console.log('\n');
+  console.log(`${welcome}`);
+  console.log('_'.repeat(30));
+
+
+  showMenu();
+};
+
+// стрелочеая функция
 const addNote = () => {
-  rl.question("ввкдите надпись", (title) => {
-    rl.question("напишите текст для заметки", (context) => {
+  rl.question("Введите заголовок", (title) => {
+    rl.question("Напишите текст заметки", (content) => {
       const newNote = {
-        id: notes.lenght + 1,
+        id: notes.length + 1,
         title: title,
         content: content,
-        date: new Data().toLocaleString(),
+        date: new Date().toLocaleString(),
       };
       notes.push(newNote);
-      console.log(`заметка ${newNote.title} сохранена `);
-      console.log(`всего заметок: ${notes.length}`);
+      console.log(`Заметка ${newNote.title} сохранена!`);
+      console.log(`Всего заметок ${notes.length}`);
+
       showMenu();
     });
   });
-}; // стрелочная функция
+};
 
-const showNotes =() =>{
+const showNotes = () => {
+  console.log("----Все ваши заметки----");
+  notes.forEach((note) => {
+    console.log("-".repeat(30));
+    console.log(`${note.id} * ${note.date}`);
+    console.log(`${note.title}`);
+    console.log(`${note.content}`);
+    console.log("-".repeat(30));
+  });
+  showMenu();
+};
 
-    console.log(`-----все ваши заметки ----`);
-    notes.forEach((note) => {
-        console.log("-".repeat(30));
-        console.log(`${note.id} * ${note.date}`);
-        console.log(`${note.title} `);
-        console.log(`${note.content}`);
-        console.log("-".repeat(30));
+const showMenu = () => {
 
-    });
+  console.log(`Всего заметок ${notes.length}`);
+  console.log("Главное меню");
+  console.log("1. Доюавить заметку");
+  console.log("2. Посмотреть заметки");
+  console.log("3. удалить заметку");
+
+  rl.question("Выберите пункт от 1 до 2", (choice) => {
+    switch (choice) {
+      case "1":
+        addNote();
+        break;
+      case "2":
+        showNotes();
+        break;
+      case '3':
+        deleteNote();
+      default:
+        console.log("Нет такого пункта!");
+        showMenu();
+    }
+  });
+};
+
+const deleteNote = () => {
+
+  if(notes.length === 0){
+    console.log("у вас нет заметок");
+  
+    }
+    rl.question("Введите номер заметки для удаления или 0 для отмены", (choice) =>{
+    let num = parseInt(choice);
+    if (choice  === 0){
+      showMenu();
+ 
+  }
+  else if(num > 0 && num <= notes.length){
+    notes.splice(num - 1, 1);
+    // splice - удаляет необходимый индекс
+    console.log(`эта заметка`);
+  }
+  else{
+    console.log("нет подходящей заметки");
     showMenu();
+
+  };
+});
 };
 
-// МЕНЮ ------------------------
-
-const showMenu = () =>{
-    console.log(`${str}`);
-    console.log(`всего заметок${notes.length}`);
-    console.log("главное меню");
-    console.log(`1 - Добавить заметку`);
-    console.log(`2 - посмотреть заметку`)
-
-    rl.question("выберите 1 или 2", (choice) => {
-        switch(choice){
-            case '1':
-                addNote();
-                break;
-            case '2':
-                showNotes();
-                break;
-            default:
-                console.log("нетб введите 1 или 2");
-                showMenu();
-
-        }
-    });
-    
-};
-
-showMenu();
-
-
+welcomeApp();
