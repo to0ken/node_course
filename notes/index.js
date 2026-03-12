@@ -15,6 +15,8 @@ let notes = [];
 let welcome = `Тебя приветствует приложение ${NAME_PROJ}`;
 
 const welcomeApp = () => {
+  Decorator.presentMenu(welcome);
+  
   
 
   showMenu();
