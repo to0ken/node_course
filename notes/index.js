@@ -1,5 +1,5 @@
 const readline = require("readline"); // импортируем модуль из node
-const helper = require("/utils/helper");
+const helper = require("./utils/helper");
 
 
 const rl = readline.createInterface({
@@ -24,10 +24,10 @@ const welcomeApp = () => {
 
 // стрелочеая функция
 const addNote = () => {
-  rl.question("Введите заголовок", (title) => {
-    rl.question("Напишите текст заметки", (content) => {
+  rl.question("Введите заголовок: ", (title) => {
+    rl.question("Напишите текст заметки: ", (content) => {
       const newNote = {
-        id: helper.reindexId(notes),
+        id: notes.length + 1,
         title: title,
         content: content,
         date: new Date().toLocaleString(),
