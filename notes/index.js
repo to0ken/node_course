@@ -1,4 +1,6 @@
 const readline = require("readline"); // импортируем модуль из node
+const helper = require("/utils/helper");
+
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -13,10 +15,9 @@ let welcome = `Тебя приветствует приложение ${NAME_PRO
 
 const welcomeApp = () => {
   console.log("_".repeat(30));
-  console.log('\n');
+  console.log("\n");
   console.log(`${welcome}`);
-  console.log('_'.repeat(30));
-
+  console.log("_".repeat(30));
 
   showMenu();
 };
@@ -26,7 +27,7 @@ const addNote = () => {
   rl.question("Введите заголовок", (title) => {
     rl.question("Напишите текст заметки", (content) => {
       const newNote = {
-        id: notes.length + 1,
+        id: helper.reindexId(notes),
         title: title,
         content: content,
         date: new Date().toLocaleString(),
@@ -49,18 +50,19 @@ const showNotes = () => {
     console.log(`${note.content}`);
     console.log("-".repeat(30));
   });
+
   showMenu();
+
 };
 
 const showMenu = () => {
-
   console.log(`Всего заметок ${notes.length}`);
   console.log("Главное меню");
-  console.log("1. Доюавить заметку");
-  console.log("2. Посмотреть заметки");
-  console.log("3. удалить заметку");
+  console.log("1. Добавить заметку: ");
+  console.log("2. Посмотреть заметки: ");
+  console.log("3. удалить заметку: ");
 
-  rl.question("Выберите пункт от 1 до 2", (choice) => {
+  rl.question("Выберите пункт от 1 до 3: ", (choice) => {
     switch (choice) {
       case "1":
         addNote();
@@ -68,7 +70,7 @@ const showMenu = () => {
       case "2":
         showNotes();
         break;
-      case '3':
+      case "3":
         deleteNote();
       default:
         console.log("Нет такого пункта!");
@@ -78,28 +80,31 @@ const showMenu = () => {
 };
 
 const deleteNote = () => {
-
-  if(notes.length === 0){
+  if (notes.length === 0) {
     console.log("у вас нет заметок");
-  
-    }
-    rl.question("Введите номер заметки для удаления или 0 для отмены", (choice) =>{
-    let num = parseInt(choice);
-    if (choice  === 0){
-      showMenu();
- 
   }
-  else if(num > 0 && num <= notes.length){
-    notes.splice(num - 1, 1);
-    // splice - удаляет необходимый индекс
-    console.log(`эта заметка`);
-  }
-  else{
-    console.log("нет подходящей заметки");
-    showMenu();
 
-  };
-});
+  notes.forEach((note) => {
+    console.log(`\n* ${note.id} * ${note.title} * `);
+  });
+
+  rl.question(
+    "Введите номер заметки для удаления или 0 для отмены: ",
+    (choice) => {
+      let num = parseInt(choice);
+      if (choice === 0) {
+        showMenu();
+      } else if (num > 0 && num <= notes.length) {
+        notes.splice(num - 1, 1);
+        // splice - удаляет необходимый индекс
+        console.log(`эта заметка удалена :)`);
+      } else {
+        console.log("нет подходящей заметки :(");
+        showMenu();
+      }
+      showMenu();
+    });
+  showMenu();
 };
 
 welcomeApp();
