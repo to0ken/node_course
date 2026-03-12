@@ -2,11 +2,11 @@ class Decorator{
   static drawLine(){
     console.log("=".repeat(30));
   }
-  static presentMenu(){
+  static presentMenu(welcome){
    drawLine();
   console.log("\n");
   console.log(`${welcome}`);
-  Decorator.drawLine();
+  drawLine();
   }
 }
 module.exports = Decorator;
