@@ -6,4 +6,8 @@ const reindexId = (notes) =>{
     // хотим сделать все такоеже кромн id
 };
 
-module.export = {reindexId};
+const statsNotes = (notes) => {
+    console.log(`Всего заметок ${notes.lenght}`);
+}
+
+module.exports = {reindexId, statsNotes};
