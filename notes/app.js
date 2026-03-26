@@ -21,7 +21,7 @@ async function loadNotes() {
 async function addNote() {
   const title = prompt("Введите название ");
   const content = prompt("Введите содержание ");
-  if (((title === null) | (content === null)) | ((!title) | (!content))) {
+  if ((title === null) | (content === null) | (!title | !content)) {
     alert("Заметка не может содержать пустое название или содержание!");
     return;
   }
@@ -37,51 +37,6 @@ async function addNote() {
   }
 }
 
-// редактировать заметки pad звапрс
-async function addСhange() {
-  await loadNotes();
-  if (notes.length === 0) {
-    alert("Пока нечего редактировать! Заметок нет!");
-    return;
-  }
-
-  let list = notes.map((note) => ` [${note.id}] ${note.title} `).join("\n");
-  const input = prompt(`Введите номер заметки для изменения: \n\n${list}`);
-  const id_input = parseInt(input);
-  if (!id_input) {
-    console.log("ERROR");
-    return;
-  }
-
-  // проверка на существование заметки
-  if (id_input > 0 && id_input <= notes.length) {
-    alert("Пока нечего редактировать! такой заметки нет!");
-    return;
-  }
-
-  // проходим по всему массиыу в поиске id
-  const note = notes.find((note) => note.id === id_input);
-
-  const title = prompt(`напишите новое название: `, `${note.title}`);
-  const content = prompt(`напишите новое содержание: `, `${note.content}`);
-  if (find === null) {
-    alert("ваш поиск не может быть пустым!! ");
-    return;
-  }
-  try{
-      await fetch(`api/notes/${id_input}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, content }),
-    });
-    
-  } catch (error) {
-    console.log("ERROR", error.message);
-  }
-}
-  
-
-
 async function showNotes() {
   await loadNotes();
   if (notes.length === 0) {
@@ -90,10 +45,9 @@ async function showNotes() {
   let html = "<h2> --- Заметки --- </h2>";
   notes.forEach((note) => {
     html += `
-          <div style=" background-color: #b0c8ab; color: #091f14; ">
+          <div style=" background-color: #030202; color: #008f4a;" class="note_conteiner">
               <small> [ ${note.id} ] ${note.date} </small>
               <strong> ${note.title} </strong>
-              <p> ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ </p>
               <strong> ${note.content} </strong>
           </div>
         `;
@@ -112,13 +66,11 @@ async function deleteNote() {
 
   const id_input = parseInt(input);
   if (!id_input) {
-    console.log("ERROR");
     return;
   }
 
   if (id_input > 0 && id_input <= notes.length) {
     const res = await fetch(`/api/notes/${id_input}`, { method: "DELETE" });
-    console.log("RES");
     if (res.ok) {
       await showNotes();
     }
@@ -127,10 +79,47 @@ async function deleteNote() {
   }
 }
 
+async function editNote() {
+  await loadNotes();
+  if (notes.length === 0) {
+    alert("Пока нечего редактировать! Создайте заметку!");
+    return;
+  }
+  let list = notes.map((note) => ` [${note.id}] ${note.title} `).join("\n");
+  const input = prompt(`Введите номер заметки для изменения: \n\n${list}`);
+
+  const id_input = parseInt(input);
+  if (!id_input) {
+    return;
+  }
+
+  if (id_input < 1 && id_input > notes.length) {
+    alert("Такой заметки не существует!");
+    return;
+  }
+
+  const note = notes.find((note) => note.id === id_input);
+  const title = prompt(`Введите название `, `${note.title}`);
+  const content = prompt("Введите содержание ", `${note.content}`);
+  if ((title === null) | (content === null)) {
+    alert("Заметка не может содержать пустое название или содержание!");
+    return;
+  }
+  try {
+    await fetch(`api/notes/${id_input}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title, content }),
+    });
+    await showNotes();
+  } catch (error) {
+    console.log("ERROR", error.message);
+  }
+}
 
 loadNotes();
 
 window.showNotes = showNotes;
 window.addNote = addNote;
 window.deleteNote = deleteNote;
-window.addСhange = addСhange
+window.editNote = editNote;
