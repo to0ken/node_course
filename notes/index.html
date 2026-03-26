@@ -3,14 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Менеджер заметок</title>
+    <style>
+        *{
+            margin: 10px;
+            background-color: #bdb7b7;
+            color: #0c2d0a;
+        }
+        button{
+            background-color: rgb(109, 211, 26);
+            color: #0f936e;
+        }
+        #stats{
+            color: rgbrgb(255, 255, 255);
+        }
+        #content{
+            color: #0f936e;
+        }
+    </style>
 </head>
 <body>
     <div id="stats"> </div>
     <div>
-        <button > Показать заметки</button>
+        <button onclick='showNotes()'> Показать заметки</button>
         <button onclick='addNote()'> Добавить заметку</button>
-        <button> Удалить заметку</button>
+        <button onclick='deleteNote()'> Удалить заметку</button>
+        <!-- Редактировать кнраув -->
+        <button onclick='addСhange()'> Редактировать заметку</button>
     </div>
     <div id="content"> </div>
 
