@@ -1,7 +1,6 @@
 const http = require("http");
 const fs = require("fs").promises;
 const path = require("path");
-
 const helper = require("./utils/helper");
 const fileManager = require("./utils/fileManager");
 
@@ -56,6 +55,40 @@ const server = http.createServer(async (req, res) => {
     });
     return;
   }
+  if (url.startsWith("/api/notes/") && method === "DELETE") {
+    const id = parseInt(url.split("/")[3]);
+    console.log(id);
+    notes.splice(id - 1, 1);
+    notes = helper.reindexId(notes);
+    fileManager.saveFile(notes);
+
+    res.writeHead(200, { "Content-Type": "application/json" });
+    return res.end(JSON.stringify({ success: true }));
+  }
+
+  if (url.startsWith("/api/notes/") && method === "PUT") {
+    const id = parseInt(url.split("/")[3]);
+    let body = "";
+    req.on("data", (chunk) => (body += chunk));
+    req.on("end", async () => {
+      console.log("create start");
+      const { title, content } = JSON.parse(body);
+      let note_index = notes.findIndex(note => note.id === id);
+      notes[note_index - 1] = {
+        ...notes[note_index - 1],
+        title: title,
+        content: content,
+        date: new Date().toLocaleString(),
+      };
+      fileManager.saveFile(notes);
+      console.log(`Заметка ${newNote.title} изменена!`);
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ success: true }));
+    });
+    return;
+  }
+  return;
 });
 
 server.listen(3000, () => {
