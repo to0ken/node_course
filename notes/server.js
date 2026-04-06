@@ -1,97 +1,105 @@
-const http = require("http");
-const fs = require("fs").promises;
-const path = require("path");
+import * as fs from "fs";
+import path from "path";
+import {fileURLToPath} from "url";
 
-const helper = require("./utils/helper");
-const fileManager = require("./utils/fileManager");
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const FILE_NAME = path.join(__dirname, "notes.json");
 
-let notes = fileManager.loadFile();
+export const saveFile = (notes) => {
+  const jsonData = JSON.stringify(notes, null, 2);
+  fs.writeFileSync(FILE_NAME, jsonData);
+};
 
-const server = http.createServer(async (req, res) => {
-  const { url, method } = req;
-
-  // ROOT ROUTERS
-
-  if (url === "/" && method === "GET") {
-    const html = await fs.readFile(path.join(__dirname, "index.html"), "utf-8");
-    res.writeHead(200, { "Content-Type": "text/html" });
-    res.end(html);
-    return;
+export const loadFile = () => {
+  try {
+    const jsonData = fs.readFileSync(FILE_NAME, "utf-8");
+    return JSON.parse(jsonData);
+  } catch (error) {
+    console.log(`${error.message}`);
+    return [];
   }
+};
 
-  if (url === "/app.js" && method === "GET") {
-    const js = await fs.readFile(path.join(__dirname, "app.js"), "utf-8");
-    res.writeHead(200, { "Content-Type": "application/javascript" });
-    res.end(js);
-    return;
+// Вспомогательная функция для генерации следующего ID для пользователя
+const getNextNoteId = (notes, userId) => {
+  const userNotes = notes.filter(note => note.owner_id === userId);
+  if (userNotes.length === 0) return 1;
+  const maxId = Math.max(...userNotes.map(note => note.id));
+  return maxId + 1;
+};
+
+// 2.1 Получить заметки пользователя
+export const getUserNotes = (userId) => {
+  const notes = loadFile();
+  return notes.filter(note => note.owner_id === userId);
+};
+
+// 2.2 Создать заметку
+export const createNote = (userId, title, content) => {
+  const notes = loadFile();
+  
+  const newNote = {
+    id: getNextNoteId(notes, userId),
+    owner_id: userId,
+    title: title,
+    content: content,
+    date: new Date().toLocaleString(),
+  };
+  
+  notes.push(newNote);
+  saveFile(notes);
+  return newNote;
+};
+
+// 2.3 Обновить заметку
+export const updateNote = (userId, noteId, title, content) => {
+  const notes = loadFile();
+  const noteIndex = notes.findIndex(note => note.id === noteId && note.owner_id === userId);
+  
+  if (noteIndex === -1) {
+    return null;
   }
+  
+  notes[noteIndex] = {
+    ...notes[noteIndex],
+    title: title,
+    content: content,
+    date: new Date().toLocaleString(),
+  };
+  
+  saveFile(notes);
+  return notes[noteIndex];
+};
 
-  // API ROUTERS
-
-  if (url === "/api/notes" && method === "GET") {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify(notes));
-    return;
+// 2.4 Удалить заметку
+export const deleteNote = (userId, noteId) => {
+  const notes = loadFile();
+  
+  const noteExists = notes.some(note => note.id === noteId && note.owner_id === userId);
+  
+  if (!noteExists) {
+    return false;
   }
-
-  if (url === "/api/notes" && method === "POST") {
-    let body = "";
-    req.on("data", (chunk) => (body += chunk));
-    req.on("end", async () => {
-      console.log("create start");
-      const { title, content } = JSON.parse(body);
-      const newNote = {
-        id: notes.length + 1,
-        title: title,
-        content: content,
-        date: new Date().toLocaleString(),
-      };
-      console.log("create end");
-      notes.push(newNote);
-      fileManager.saveFile(notes);
-      console.log(`Заметка ${newNote.title} сохранена!`);
-
-      res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ success: true }));
-    });
-    return;
-  }
-  if (url.startsWith("/api/notes/") && method === "DELETE") {
-    const id = parseInt(url.split("/")[3]);
-    notes.splice(id - 1, 1);
-    notes = helper.reindexId(notes);
-    fileManager.saveFile(notes);
-
-    res.writeHead(200, { "Content-Type": "application/json" });
-    return res.end(JSON.stringify({ success: true }));
-  }
-
-  if (url.startsWith("/api/notes/") && method === "PUT") {
-    let body = "";
-    const id = parseInt(url.split("/")[3]);
-    req.on("data", (chunk) => (body += chunk));
-    req.on("end", async () => {
-      console.log("edit start");
-
-      const { title, content } = JSON.parse(body);
-
-      notes[id - 1] = {
-        ...notes[id - 1],
-        title: title,
-        content: content,
-        date: new Date().toLocaleString(),
-      };
-      fileManager.saveFile(notes);
-      console.log("edit end");
-      console.log(`Заметка ${title} изменена!`);
-
-      res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ success: true }));
-    });
-  }
-  return;
-});
-
-server.listen(3000, () => {
-  console.log("Сервер запущен на порту http://localhost:3000");
-});
+  
+  const updatedNotes = notes.filter(note => !(note.id === noteId && note.owner_id === userId));
+  
+  // Переиндексируем ID оставшихся заметок пользователя
+  const userNotesToReindex = updatedNotes.filter(note => note.owner_id === userId);
+  const otherUsersNotes = updatedNotes.filter(note => note.owner_id !== userId);
+  
+  const reindexedUserNotes = userNotesToReindex.map((note, index) => ({
+    ...note,
+    id: index + 1
+  }));
+  
+  const finalNotes = [...otherUsersNotes, ...reindexedUserNotes];
+  
+  finalNotes.sort((a, b) => {
+    if (a.owner_id !== b.owner_id) return a.owner_id - b.owner_id;
+    return a.id - b.id;
+  });
+  
+  saveFile(finalNotes);
+  return true;
+};
